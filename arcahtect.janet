@@ -1,6 +1,8 @@
 (defn- flagify
   ``
   Turn a keyword or a string into a flag-style string 
+  Will not create multi-single-char flag-strings, i.e. `-it` as opposed to `-i
+  -t`, if `it` is provided as an arg, it will end up returning `--it`
 
   Ex.
   --- 
@@ -214,15 +216,30 @@
                      :list false
                      :required false}]}})
 
-(defn- table-to-flag-sequence [tbl]
-  (let [key-to-flag (fn [[x y]] [(flagify x) y])]
-    (->> tbl
-         pairs
-         (map key-to-flag)
-         flatten)))
+(defn- element-to-flag [x]
+  (case (length x)
+    1 (flagify x)
+    2 (fn [[x y]] [(flagify x) y])
+    nil))
+
+(def- to-options-list 
+  (partial map element-to-flag))
+
+(defn- to-options-sequence [ind]
+  (->> ind
+       to-options-list
+       flatten))
 
 (defn buildah [& args]
   (os/execute ["buildah" ;args] :p))
+
+(defn- flags-arg-command-form 
+  [arg &opt opts]
+  [;(to-options-sequence opts) arg])
+
+(defn- arg-flags-command-form 
+  [arg &opt opts]
+  [arg ;(to-options-sequence opts)])
 
 (defn from-containerfile 
   ``
@@ -230,14 +247,10 @@
   `args` is a keyword list that will be turned into command line opts.
   ``
   [path &opt args]
-  (buildah "bud" ;(flags-arg-command-form path args))
+  (buildah "bud" ;(flags-arg-command-form path args)))
 
-(defn- flags-arg-command-form 
-  [arg &opt flag-table]
-  [;(table-to-flag-sequence flag-table) arg])
+(defn run! [& args] (buildah ;args))
 
-(defn- arg-flags-command-form 
-  [arg &opt flag-table]
-  [arg ;(table-to-flag-sequence flag-table)])
+(run! "images" "--help")
 
-(defn run [path &opt args] nil)
+# Pool of campaigns with their tags ordered by sam-score, and send leads to campagins with matching tags in the pool, in order.
