@@ -252,5 +252,3 @@
 (defn run! [& args] (buildah ;args))
 
 (run! "images" "--help")
-
-# Pool of campaigns with their tags ordered by sam-score, and send leads to campagins with matching tags in the pool, in order.
